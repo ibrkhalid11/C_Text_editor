@@ -18,6 +18,6 @@ Inspired by lightweight editors like *kilo*, this project demonstrates raw-mode 
 Clone the repository and compile using GCC:
 
 ```bash
-git clone <repository_url>
+git clone https://github.com/ibrkhalid11/C_Text_editor.git
 cd C_Text_editor
 gcc -Wall -Wextra -pedantic editor.c -o editor
