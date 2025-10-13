@@ -300,7 +300,7 @@ void editorRefreshScreen(void){
     editorScroll();
     abAppend(&ab, "\x1b[?25l", 6);
     abAppend(&ab, "\x1b[H", 3);
-    
+    abAppend(&ab, "\x1b[2J", 4);
     editorDrawRows(&ab);
 
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, E.cx + 1);
