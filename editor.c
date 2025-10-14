@@ -7,6 +7,7 @@
 /*** includes ***/
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,6 +24,7 @@
 #define IBREDIT_TAB_STOP 8
 
 enum editorKey{
+    BACKSPACE = 127,
     ARROW_LEFT = 1000,
     ARROW_RIGHT,
     ARROW_UP,
@@ -86,6 +88,11 @@ int     getWindowSize(int *rows, int *column);
 void    editorDrawStatusBar(struct abuf *b);
 void    editorSetStatusMessage(const char *fmt, ...);
 void    editorDrawMessageBar(struct abuf *ab);
+
+void    editorRowInsertChar(erow *row, int at, int c);
+void    editorInsertChar(int c);
+void    editorSave(void);
+char    *editorRowsToString(int *buflen);
 /*** global variables ***/
 struct editorConfig E;
 
@@ -138,6 +145,40 @@ void editorAppendRow(char *s, size_t len){
     editorUpdateRow(&E.row[at]);
     E.numrows++;
 }
+void editorRowInsertChar(erow *row, int at, int c){
+    if(at < 0 || at > row->size) at = row-> size;
+    row->chars = realloc(row->chars, (size_t)row->size + 2);
+    memmove(&row->chars[at + 1], &row->chars[at], (size_t)(row->size - at + 1));
+    row->size++;
+    row->chars[at] = (char)c;
+    editorUpdateRow(row);
+}
+void editorInsertChar(int c){
+    if(E.cy == E.numrows){
+        editorAppendRow("", 0);
+    }
+    editorRowInsertChar(&E.row[E.cy], E.cx, c);
+    E.cx++;
+}
+char *editorRowsToString(int *buflen){
+    int totlen = 0;
+    int j;
+    char *buf;
+    char *p;
+    for(j = 0; j < E.numrows; j++){
+        totlen += E.row[j].size + 1;
+    }
+    *buflen = totlen;
+    buf = malloc(totlen * sizeof(char));
+    p = buf;
+    for(j = 0; j < E.numrows; j++){
+        memcpy(p, E.row[j].chars, E.row[j].size);
+        p += E.row[j].size;
+        *p = '\n';
+        p++;
+    }
+    return buf;
+}
 void editorOpen(char *filename){
     free(E.filename);
     E.filename = strdup(filename);
@@ -158,7 +199,18 @@ void editorOpen(char *filename){
     free(line);
     fclose(fp);
 }
-
+void editorSave(void){
+    int len;
+    char *buf;
+    int fd;
+    if(E.filename == NULL) return;
+    buf = editorRowsToString(&len);
+    fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+    ftruncate(fd, len);
+    write(fd, buf, (size_t)len);
+    close(fd);
+    free(buf);
+}
 void abAppend(struct abuf *ab, const char *s, int len){
     char *new = realloc(ab->b, (size_t)(ab->len + len));
     if (new == NULL) return;
@@ -341,10 +393,16 @@ void editorProcessKeypress(void){
     int c = editorReadKey();
     
     switch (c) {
+        case '\r':
+            /*TODO*/
+            break;
         case CTRL_KEY('q'):
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
+            break;
+        case CTRL_KEY('s'):
+            editorSave(); 
             break;
         case HOME_KEY:
             E.cx = 0; break;
@@ -352,7 +410,11 @@ void editorProcessKeypress(void){
             if(E.cy < E.numrows){
                 E.cx = E.row[E.cy].size;
             }
-            break; 
+            break;
+        case BACKSPACE:
+        case CTRL_KEY('h'):
+            /*TODO*/
+            break;
         case PAGE_UP:
         case PAGE_DOWN:
             {
@@ -373,6 +435,10 @@ void editorProcessKeypress(void){
         case ARROW_RIGHT:
             editorMoveCursor(c);
             break;
+        case CTRL_KEY('l'): 
+        case '\x1b':
+            break;
+        default: editorInsertChar(c); break;
     }
 }
 void editorDrawStatusBar(struct abuf *ab){
@@ -400,7 +466,7 @@ void editorDrawStatusBar(struct abuf *ab){
 void editorDrawMessageBar(struct abuf *ab){
     int msglen;
     abAppend(ab, "\x1b[K", 3);
-    msglen = strlen(E.statusmsg);
+    msglen = (int)strlen(E.statusmsg);
     if (msglen > E.screencols) msglen = E.screencols;
     if (msglen && time(NULL) - E.statusmsg_time < 5)
         abAppend(ab, E.statusmsg, msglen);
