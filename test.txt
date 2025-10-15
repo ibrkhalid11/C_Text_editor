@@ -1,2 +1,7 @@
-aksdjdfjf
-askjf
+this is my custom text editor, the enter button doesnt work but it works pretty well overall
+you can use the arrow keys to navigate, the page up, page down, the home and end key, and the backspace, ctrl h, and del key do the same thing, which is backspace
+control s to save, control q to quit
+if you dont want to save, control q three times
+
+
+
