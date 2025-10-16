@@ -102,6 +102,8 @@ void    editorFreeRow(erow *row);
 void    editorDelRow(int at);
 void    editorRowAppendString(erow *row, char *s, size_t len);
 void    editorInsertNewLine(void);
+
+char    *editorPrompt(char *prompt);
 /*** global variables ***/
 struct editorConfig E;
 
@@ -272,7 +274,13 @@ void editorSave(void){
     int len;
     char *buf;
     int fd;
-    if(E.filename == NULL) return;
+    if(E.filename == NULL){
+        E.filename = editorPrompt("Save as %s(ESC TO CANCEL)");
+        if(E.filename == NULL){
+            editorSetStatusMessage("Save aborted");
+            return;
+        }
+    }
     buf = editorRowsToString(&len);
     fd = open(E.filename, O_RDWR | O_CREAT, 0644);
     if(fd != -1){
@@ -429,6 +437,39 @@ int editorReadKey(void){
         return '\x1b';
     } else{
         return c;
+    }
+}
+char *editorPrompt(char *prompt){
+    int c;
+    size_t bufsize = 128;
+    char *buf = malloc(bufsize);
+    size_t buflen = 0;
+    buf[0] = '\0';
+
+    while(1){
+        editorSetStatusMessage(prompt, buf);
+        editorRefreshScreen();
+        c = editorReadKey();
+        if(c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE){
+            if(buflen != 0) buf[--buflen] = '\0';
+        } else if(c == '\x1b'){
+            editorSetStatusMessage("");
+            free(buf);
+            return NULL;
+        } else if(c == '\r'){
+            if(buflen != 0){
+                editorSetStatusMessage("");
+                return buf;
+            }
+        }
+        else if(!iscntrl(c) && c < 128){
+            if(buflen == bufsize - 1){
+                bufsize *= 2;
+                buf = realloc(buf, bufsize);
+            }
+            buf[buflen++] = c;
+            buf[buflen] = '\0';
+        }
     }
 }
 void editorMoveCursor(int key){
