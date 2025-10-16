@@ -1,1 +1,7 @@
+the fact that we have an enter button makes me so happy
+we can just press it to get to a new line
+control s to save
+control q to quit
+to quit without saving you can hit control-q 3 times
+this tells you how many lines there are and which one you are on
 
