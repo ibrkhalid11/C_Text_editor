@@ -5,17 +5,24 @@
 
 
 /*** includes ***/
-#include <errno.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <errno.h>      /*editorSave, editorReadKey*/
+#include <ctype.h>      /*editorPrompt*/
+#include <fcntl.h>      /*editorSave*/
+#include <stdarg.h>     /*editorSetStatusMessage*/
+#include <stdlib.h>     /* editorUpdateRow, editorInsertRow, editorFreeRow, 
+                         * editorRowInsertChar, editorRowAppendString
+                         * editorRowsToString, editorSave, abAppend
+                         * abFree, _die, enableRawMode, editorPrompt
+                         * editorProcessKeypress                    */
 #include <stdio.h>
 #include <string.h>
-#include <termios.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
+#include <termios.h>    /* disableRawMode, enableRawMode*/
+#include <time.h>       /* editorDrawMessageBar*/
+#include <unistd.h>     /* editorSave, getCursorPosition, getWindowSize
+                         * die, disableRawMode, enableRawMode, 
+                         * editorReadKey, editorProcessKeypress
+                         * editorRefreshScreen*/
+#include <sys/ioctl.h>  /* getWindowSize */
 #include <sys/types.h>
 /*** hash defines ***/
 #define VERSION "0.0.1" 
