@@ -1,82 +1,10 @@
-#define _DEFAULT_SOURCE
-#define _BSD_SOURCE
-#define _GNU_SOURCE
-
-
-
-/*** includes ***/
-#include <errno.h>      /*editorSave, editorReadKey*/
-#include <ctype.h>      /*editorPrompt*/
-#include <fcntl.h>      /*editorSave*/
-#include <stdarg.h>     /*editorSetStatusMessage*/
-#include <stdlib.h>     /* editorUpdateRow, editorInsertRow, editorFreeRow, 
-                         * editorRowInsertChar, editorRowAppendString
-                         * editorRowsToString, editorSave, abAppend
-                         * abFree, _die, enableRawMode, editorPrompt
-                         * editorProcessKeypress                    */
-#include <stdio.h>
-#include <string.h>
-#include <termios.h>    /* disableRawMode, enableRawMode*/
-#include <time.h>       /* editorDrawMessageBar*/
-#include <unistd.h>     /* editorSave, getCursorPosition, getWindowSize
-                         * die, disableRawMode, enableRawMode, 
-                         * editorReadKey, editorProcessKeypress
-                         * editorRefreshScreen*/
-#include <sys/ioctl.h>  /* getWindowSize */
-#include <sys/types.h>
-/*** hash defines ***/
-#define VERSION "0.0.1" 
-#define CTRL_KEY(k) ((k) & 0x1F)
-#define ABUF_INIT {NULL, 0}
-#define IBREDIT_TAB_STOP 8
-#define QUIT_TIMES 3
-
-enum editorKey{
-    BACKSPACE = 127,
-    ARROW_LEFT = 1000,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ARROW_DOWN,
-    DEL_KEY,
-    HOME_KEY,
-    END_KEY,
-    PAGE_UP,
-    PAGE_DOWN
-};
-struct abuf{
-    char *b;
-    int len;
-};
-typedef struct erow{
-    int size;
-    int rsize;
-    char *chars;
-    char *render;
-}erow;
-
-struct editorConfig{
-    int cx;
-    int cy;
-    int rx;
-    int rowoff;
-    int coloff;
-    int screenrows;
-    int screencols;
-    int numrows;
-    erow *row;
-    int dirty;
-    char *filename;
-    char statusmsg[80];
-    time_t statusmsg_time;
-    struct termios orig_termios;
-};
+#include "utils.h"
+#include "editorTypes.h"
+#include "insideFunc.h"
 
 /*** function prototypes ***/
 void    enableRawMode(void);
 void    disableRawMode(void);
-
-void    _die(const char *s); /* error recorder and exit for write() in die() */
-void    die(const char *s);  /* error recorder and exit for all code*/
 
 void    initEditor(void);
 int     editorReadKey(void);
@@ -89,8 +17,6 @@ void    editorUpdateRow(erow *row);
 void    editorOpen(char *filename);
 void    editorInsertRow(int at, char *s, size_t len);
 void    editorScroll(void);
-void    abAppend(struct abuf *ab, const char *s, int len);
-void    abFree(struct abuf *ab);
 int     getCursorPosition(int *rows, int *cols);
 int     getWindowSize(int *rows, int *column);
 
@@ -305,17 +231,6 @@ void editorSave(void){
     free(buf);
     editorSetStatusMessage("Unable to save!!! I/O Error: %s", strerror(errno));
 }
-void abAppend(struct abuf *ab, const char *s, int len){
-    char *new = realloc(ab->b, (size_t)(ab->len + len));
-    if (new == NULL) return;
-    memcpy(&new[ab->len], s, (size_t)len);
-    ab->b = new;
-    ab->len += len;
-}
-void abFree(struct abuf *ab){
-    free(ab->b);
-}
-
 void initEditor(void){
     E.cx = 0;
     E.cy = 0;
@@ -364,16 +279,6 @@ int getWindowSize(int *rows, int *cols){
     }
 }
 
-/*purpose of die...*/
-void _die(const char *s){
-    perror(s);
-    exit(1);
-}
-void die(const char *s){
-    if(write(STDOUT_FILENO, "\x1b[2J", 4) == -1 ){_die("write");}
-    if(write(STDOUT_FILENO, "\x1b[H", 3) == -1){_die("write");}
-    _die(s);
-}
 
 /*purpose of rawmode*/
 void disableRawMode(void){
