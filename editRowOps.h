@@ -1,5 +1,5 @@
-#ifndef EDITOPS_H
-#define EDITOPS_H
+#ifndef EDITROWOPS_H
+#define EDITROWOPS_H
 
 #include "utils.h"
 #include "editorTypes.h"

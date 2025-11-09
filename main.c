@@ -2,7 +2,7 @@
 #include "editorTypes.h"
 #include "insideFunc.h"
 #include "termIO.h"
-#include "editOps.h"
+#include "editRowOps.h"
 /*** function prototypes ***/
 
 void    initEditor(void);

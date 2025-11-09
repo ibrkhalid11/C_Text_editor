@@ -1,5 +1,5 @@
 
-#include "editOps.h"
+#include "editRowOps.h"
 int editorRowCxToRx(erow *row, int cx){
     int rx;
     int j;
