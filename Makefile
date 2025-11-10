@@ -6,4 +6,4 @@ $(TARGET):
 	$(CC) *.c -o $(TARGET) $(CFLAGS)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) editor.s

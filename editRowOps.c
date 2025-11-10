@@ -122,3 +122,36 @@ char *editorRowsToString(int *buflen){
     return buf;
 }
 
+void editorDrawRows(struct abuf *ab) {
+  int y;
+  int welcomelen;
+  int padding;
+  int filerow;
+  char welcome[80];
+  for (y = 0; y < E.screenrows; y++) {
+      filerow = y + E.rowoff;
+      if (filerow >= E.numrows) {
+          if (E.numrows == 0 && y == E.screenrows / 3) {
+              welcomelen = snprintf(welcome, sizeof(welcome),
+                      "ibredit -- version %s", VERSION);
+              if (welcomelen > E.screencols) welcomelen = E.screencols;
+              padding = (E.screencols - welcomelen) / 2;
+              if (padding) {
+                  abAppend(ab, "~", 1);
+                  padding--;
+              }
+              while (padding--) abAppend(ab, " ", 1);
+              abAppend(ab, welcome, welcomelen);
+          } else {
+              abAppend(ab, "~", 1);
+          }
+      } else {
+          int len = E.row[filerow].rsize - E.coloff;
+          if(len < 0) len = 0;
+          if (len > E.screencols) len = E.screencols;
+          abAppend(ab, &E.row[filerow].render[E.coloff], len);
+      }
+      abAppend(ab, "\x1b[K", 3);
+      abAppend(ab, "\r\n", 2);
+  }
+}

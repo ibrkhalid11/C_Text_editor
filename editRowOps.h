@@ -3,12 +3,9 @@
 
 #include "utils.h"
 #include "editorTypes.h"
-
+#include "insideFunc.h"
 /*extern E variable is used*/
 extern struct editorConfig E;
-
-/*NOT in file, only needed for declaration*/
-void    editorDrawRows(struct abuf *ab);
 
 /*function prototypes*/
 int     editorRowCxToRx(erow *row, int cx);
@@ -21,4 +18,5 @@ void    editorRowDelChar(void);
 void    editorFreeRow(erow *row);
 void    editorDelRow(int at);
 void    editorRowAppendString(erow *row, char *s, size_t len);
+void    editorDrawRows(struct abuf *ab);
 #endif
