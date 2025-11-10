@@ -1,9 +1,10 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -std=c99
+CFLAGS = -Wall -Wextra -pedantic -std=c99 -Iinclude
 TARGET = ibredit
+SRC = $(wildcard src/*.c)
 
 $(TARGET):
-	$(CC) *.c -o $(TARGET) $(CFLAGS)
+	$(CC) $(SRC) -o $(TARGET) $(CFLAGS)
 
 clean:
-	rm -f $(TARGET) editor.s
+	rm -f $(TARGET)
